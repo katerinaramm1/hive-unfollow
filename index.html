@@ -138,6 +138,16 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     </div>
     <div class="progress" id="progress"></div>
     <div id="welcome"></div>
+    <div class="pager" style="margin:0 0 10px">
+      <div>
+        <button id="prevTop">Previous</button>
+        <button id="nextTop">Next</button>
+        <span class="muted small" id="pageinfoTop"></span>
+      </div>
+      <label class="small" style="margin:0">Per page
+        <select id="perTop"><option>25</option><option selected>50</option><option>100</option><option>500</option></select>
+      </label>
+    </div>
     <div class="rows" id="rows"></div>
     <div class="pager">
       <div>
@@ -156,11 +166,13 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
 
   <section class="card share-wrap">
     <h2>3. Share your result (numbers only)</h2>
-    <p class="hint" style="margin-top:0">The picture shows your follow-back rate and counts. It never shows usernames.</p>
+    <p class="hint" style="margin-top:0">The picture shows your follow-back rate and counts, and your own account name if you tick the box. It never shows names from your lists.</p>
     <div class="seg" id="sizes" role="group" aria-label="Picture size">
-      <button data-size="post" aria-pressed="true">Post (4:5)</button>
+      <button data-size="x" aria-pressed="true">X post (16:9)</button>
+      <button data-size="post" aria-pressed="false">Post (4:5)</button>
       <button data-size="story" aria-pressed="false">Story (9:16)</button>
     </div>
+    <label class="small" style="margin:10px 0 0;display:flex;gap:8px;align-items:center"><input type="checkbox" id="showname" checked> Show my account name on the picture</label>
     <canvas id="cv" width="1080" height="1350" aria-label="Share picture preview"></canvas>
     <div class="btns">
       <button class="primary" id="savepic">Save image</button>
@@ -171,6 +183,20 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     <p class="hint" id="shareNote"></p>
   </section>
 </div>
+
+<section class="card">
+  <details class="privacy" id="news">
+    <summary>What's happening on Hive (click to open)</summary>
+    <div class="seg" id="newsTabs" role="group" aria-label="Which posts to show" style="margin-top:12px">
+      <button data-news="trending" aria-pressed="true">Trending</button>
+      <button data-news="hot" aria-pressed="false">Hot</button>
+      <button data-news="created" aria-pressed="false">Latest</button>
+      <button data-news="account" aria-pressed="false">@katerinaramm</button>
+    </div>
+    <div class="rows" id="newsRows" style="margin-top:10px"></div>
+    <p class="hint" id="newsNote">Posts are written by the Hive community and are not chosen or checked by this page. They open on the site you picked under "Open profiles on".</p>
+  </details>
+</section>
 
 <section class="card">
   <details class="privacy" id="privacy">
@@ -185,7 +211,13 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
       <li>A visit counter (GoatCounter). It counts page views without cookies and without personal profiles. It does not receive the username you type.</li>
     </ul>
     <h3>What is stored</h3>
-    <p>Only in your browser, on your device: the list of profiles you opened with the time you opened them, your page-size choice, and the Hive site you chose. This is stored under your username so it carries over when you come back. It is never sent anywhere. "Reset progress" deletes the opened list. Clearing your browser's site data deletes everything. The follower lists themselves are not stored; you check again each visit.</p>
+    <p>Only in your browser, on your device: the list of profiles you opened with the time you opened them, your page-size choice, the Hive site you chose, and whether you closed the live blockchain block. This is stored under your username so it carries over when you come back. It is never sent anywhere. "Reset progress" deletes the opened list. Clearing your browser's site data deletes everything. The follower lists themselves are not stored; you check again each visit.</p>
+    <h3>The "What's happening on Hive" block</h3>
+    <p>Only when you open it, the page asks a public Hive node for a list of public posts (trending, hot, latest, or the latest from @katerinaramm). No username of yours is sent. Titles are shown as plain text, and the links open an outside site.</p>
+    <h3>The "Live on the Hive blockchain" block</h3>
+    <p>This block is open when the page loads, so the page asks a public Hive node for the newest blocks and counts the actions in them (votes, posts, replies, transfers, follows and unfollows). While it is open it refreshes about every 15 seconds for a few minutes, and pauses when the tab is hidden. If you close the block, it stops asking, and your browser remembers that you closed it. No username of yours is sent, and the page keeps no account names from the blocks.</p>
+    <h3>The share picture</h3>
+    <p>The picture is drawn in your browser and is not uploaded anywhere. It shows numbers and, if you leave the box ticked, your own account name. It never shows account names from your lists.</p>
     <h3>Passwords and keys</h3>
     <p>The page never asks for, receives or stores a password, private key or Hive Keychain access. It cannot post, vote, follow or unfollow.</p>
     <h3>Outside links</h3>
@@ -211,6 +243,15 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
   </div>
   <div>Created by <a href="https://x.com/katerinaramm1" target="_blank" rel="noopener">@katerinaramm1</a> on X and <a href="https://peakd.com/@katerinaramm" target="_blank" rel="noopener">@katerinaramm</a> on Hive, with the help of Claude · <a href="#privacy" id="privlink">Privacy</a> · Page views so far: <span id="visits">&ndash;</span></div>
 </footer>
+
+<section class="card">
+  <details class="privacy" id="activity" open>
+    <summary>Live on the Hive blockchain (click to close or open)</summary>
+    <div class="stats" id="actStats" style="margin-top:12px"></div>
+    <p class="hint" id="actNote">Counts from the latest few blocks (a new block comes about every 3 seconds). No account names are shown.</p>
+    <div class="btns"><button id="actRefresh">Refresh</button></div>
+  </details>
+</section>
 </div>
 <script>
 /* Hive Unfollow Check - core logic (no browser needed, tested in test.js) */
@@ -377,10 +418,81 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     };
   }
 
+  // Posts from bridge.get_ranked_posts / bridge.get_account_posts. Titles come from the
+  // blockchain (anyone can write them), so they are only ever shown as plain text.
+  function normalizePosts(list, max) {
+    var out = [];
+    if (!Array.isArray(list)) return out;
+    for (var i = 0; i < list.length && out.length < (max || 10); i++) {
+      var p = list[i];
+      if (!p || typeof p !== 'object') continue;
+      var title = String(p.title == null ? '' : p.title).replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+      var author = String(p.author || '').toLowerCase();
+      var permlink = String(p.permlink || '');
+      if (!title || !isValidName(author) || !/^[a-z0-9][a-z0-9-]{0,255}$/.test(permlink)) continue;
+      if (title.length > 140) title = title.slice(0, 137) + '...';
+      var votes = p.stats && isFinite(p.stats.total_votes) ? Number(p.stats.total_votes) : null;
+      var comments = isFinite(p.children) ? Number(p.children) : null;
+      var payout = isFinite(parseFloat(p.payout)) ? parseFloat(p.payout) : (isFinite(parseFloat(p.payout_value)) ? parseFloat(p.payout_value) : null);
+      out.push({ title: title, author: author, permlink: permlink, votes: votes, comments: comments, payout: payout });
+    }
+    return out;
+  }
+  function postUrl(front, author, permlink) {
+    return frontendUrl(front, author) + '/' + encodeURIComponent(permlink);
+  }
+  function postMeta(p) {
+    var bits = ['by @' + p.author];
+    if (p.votes != null) bits.push(p.votes + (p.votes === 1 ? ' vote' : ' votes'));
+    if (p.comments != null) bits.push(p.comments + (p.comments === 1 ? ' comment' : ' comments'));
+    return bits.join(' · ');
+  }
+
+  // One operation from a block: either ["vote", {...}] or {type: "vote_operation", value: {...}}
+  function normalizeOp(op) {
+    if (Array.isArray(op)) return { type: String(op[0]), data: op[1] || {} };
+    if (op && typeof op === 'object' && op.type) return { type: String(op.type).replace(/_operation$/, ''), data: op.value || {} };
+    return null;
+  }
+  // Counts only. No account names are collected.
+  function summarizeBlocks(blocks) {
+    var r = { blocks: 0, transactions: 0, ops: 0, votes: 0, posts: 0, replies: 0, transfers: 0,
+      follows: 0, unfollows: 0, other: 0, witness: '', headBlock: 0, headTime: null };
+    (blocks || []).forEach(function (b) {
+      if (!b || !Array.isArray(b.transactions)) return;
+      r.blocks++; r.transactions += b.transactions.length;
+      if (b.timestamp) {
+        var t = Date.parse(b.timestamp + (/Z$/.test(b.timestamp) ? '' : 'Z'));
+        if (isFinite(t) && (r.headTime === null || t > r.headTime)) { r.headTime = t; r.witness = String(b.witness || ''); }
+      }
+      b.transactions.forEach(function (tx) {
+        (tx.operations || []).forEach(function (raw) {
+          var op = normalizeOp(raw); if (!op) return;
+          r.ops++;
+          if (op.type === 'vote') r.votes++;
+          else if (op.type === 'comment') { if (op.data.parent_author) r.replies++; else r.posts++; }
+          else if (op.type === 'transfer') r.transfers++;
+          else if (op.type === 'custom_json' && op.data.id === 'follow') {
+            var kind = null;
+            try {
+              var j = JSON.parse(op.data.json);
+              if (Array.isArray(j) && j[0] === 'follow' && j[1] && Array.isArray(j[1].what)) {
+                kind = j[1].what.length === 0 ? 'unfollow' : (j[1].what.indexOf('blog') > -1 ? 'follow' : null);
+              }
+            } catch (e) {}
+            if (kind === 'follow') r.follows++; else if (kind === 'unfollow') r.unfollows++; else r.other++;
+          } else r.other++;
+        });
+      });
+    });
+    r.perSecond = r.blocks ? Math.round((r.ops / (r.blocks * 3)) * 10) / 10 : 0; // one block about every 3 seconds
+    return r;
+  }
+
   function shareText(stats, url, tag) {
     var t = 'I checked who does not follow me back on Hive: ' + stats.rate + '% follow back, ' +
       stats.notBack.toLocaleString('en-US') + ' of the ' + stats.following.toLocaleString('en-US') +
-      ' accounts I follow do not. Try it: ' + url;
+      ' accounts I follow do not. Try this tool created by @katerinaramm1 : ' + url;
     if (tag) t += ' ' + tag;
     return t;
   }
@@ -391,6 +503,8 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     pickNames: pickNames, fetchList: fetchList, computeLists: computeLists,
     splitDone: splitDone, sameLocalDay: sameLocalDay, progressStats: progressStats,
     progressLine: progressLine, cleanOpened: cleanOpened, toCsv: toCsv, csvCell: csvCell,
+    normalizePosts: normalizePosts, postUrl: postUrl, postMeta: postMeta,
+    normalizeOp: normalizeOp, summarizeBlocks: summarizeBlocks,
     filterList: filterList, compareCounts: compareCounts, shareText: shareText
   };
 });
@@ -402,7 +516,9 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
   var C = window.HiveCore;
   var GC_CODE = 'hive-unfollow';
   var SITE_URL = 'https://katerinaramm1.github.io/hive-unfollow/';
-  var SHARE_TAG = ''; // to be decided with the owner (account or hashtag)
+  var SHARE_TAG = '#UnfollowersCheck'; // added at the end of the share text
+  var NEWS_ACCOUNT = 'katerinaramm';
+  var NEWS_COUNT = 10;
   var INSIGHTS_URL = ''; // address of Hive Insights; while empty it shows as plain text
   var BATCH = 100;
   var NODES = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://hive-api.arcange.eu', 'https://api.openhive.network'];
@@ -411,7 +527,7 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
   var $ = function (id) { return document.getElementById(id); };
   var state = {
     user: '', example: false, lists: null, opened: {}, tab: 'notBack', page: 0,
-    per: 50, q: '', front: 'peakd', size: 'post', profile: null, welcomeShown: false
+    per: 50, q: '', front: 'peakd', size: 'x', profile: null, welcomeShown: false
   };
 
   /* ---------- storage (always in try/catch) ---------- */
@@ -424,11 +540,12 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
       var p = JSON.parse(lsGet('hiveUnfollow.v1.prefs') || '{}');
       if ([25, 50, 100, 500].indexOf(p.per) > -1) state.per = p.per;
       if (C.FRONTENDS[p.front]) state.front = p.front;
+      if (p.activityOpen === false) $('activity').open = false;
     } catch (e) {}
-    $('per').value = String(state.per);
+    $('per').value = String(state.per); $('perTop').value = String(state.per);
     $('front').value = state.front;
   }
-  function savePrefs() { lsSet('hiveUnfollow.v1.prefs', JSON.stringify({ per: state.per, front: state.front })); }
+  function savePrefs() { lsSet('hiveUnfollow.v1.prefs', JSON.stringify({ per: state.per, front: state.front, activityOpen: $('activity').open })); }
   function loadProgress(u) {
     try { return C.cleanOpened(JSON.parse(lsGet(userKey(u)) || '{}').opened); } catch (e) { return {}; }
   }
@@ -586,6 +703,7 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     });
   }
   function render() {
+    if (!state.lists) return; // nothing checked yet
     renderTabs();
     var c = current(), list = activeList();
     var p = C.progressStats(state.opened, Date.now(), c.todo.length, BATCH);
@@ -611,7 +729,9 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     }
     slice.forEach(function (it) { rows.appendChild(buildRow(it)); });
     $('pageinfo').textContent = list.length ? 'Page ' + (state.page + 1) + ' of ' + pages + ' (' + fmt(list.length) + ' accounts)' : '';
-    $('prev').disabled = state.page <= 0; $('next').disabled = state.page >= pages - 1;
+    $('pageinfoTop').textContent = $('pageinfo').textContent;
+    ['prev', 'prevTop'].forEach(function (id) { $(id).disabled = state.page <= 0; });
+    ['next', 'nextTop'].forEach(function (id) { $(id).disabled = state.page >= pages - 1; });
     $('csv').disabled = !list.length;
     $('resetBox').style.display = state.example ? 'none' : '';
   }
@@ -668,32 +788,56 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
   }
 
   /* ---------- share picture (numbers only) ---------- */
+  function hexPath(g, cx, cy, r) {
+    g.beginPath();
+    for (var i = 0; i < 6; i++) { var an = Math.PI / 3 * i + Math.PI / 3; g.lineTo(cx + r * Math.cos(an), cy + r * Math.sin(an)); }
+    g.closePath();
+  }
   function drawShare() {
     var cv = $('cv'), L = state.lists; if (!L) return;
-    var W = 1080, H = state.size === 'story' ? 1920 : 1350;
+    var size = state.size;
+    var W = size === 'x' ? 1600 : 1080, H = size === 'story' ? 1920 : size === 'x' ? 900 : 1350;
     cv.width = W; cv.height = H;
     var g = cv.getContext('2d');
     var bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#16171d'); bg.addColorStop(1, '#2a0d14');
     g.fillStyle = bg; g.fillRect(0, 0, W, H);
-    var cy = state.size === 'story' ? 330 : 190;
-    // hexagon mark
-    g.fillStyle = '#e31337'; g.beginPath();
-    var cx = W / 2, r = 70;
-    for (var i = 0; i < 6; i++) { var an = Math.PI / 6 + i * Math.PI / 3 + Math.PI / 6; g.lineTo(cx + r * Math.cos(an), cy + r * Math.sin(an)); }
-    g.closePath(); g.fill();
-    g.textAlign = 'center'; g.fillStyle = '#f3f4f7';
-    g.font = '600 52px system-ui, sans-serif'; g.fillText('My Hive follow-back rate', cx, cy + 170);
-    g.fillStyle = '#ff3b57'; g.font = '800 250px system-ui, sans-serif'; g.fillText(L.rate + '%', cx, cy + 420);
+    var showName = !state.example && $('showname').checked && state.user;
+    var nameText = showName ? '@' + state.user : '';
     var rows = [['I follow', fmt(L.following)], ['Follow me back', fmt(L.mutuals.length)], ['Do not follow back', fmt(L.notBack.length)]];
-    var y = cy + 560;
-    rows.forEach(function (rw) {
-      g.fillStyle = '#1f222b'; g.fillRect(120, y - 70, W - 240, 110);
-      g.textAlign = 'left'; g.fillStyle = '#9ba1b0'; g.font = '500 40px system-ui, sans-serif'; g.fillText(rw[0], 160, y);
-      g.textAlign = 'right'; g.fillStyle = '#f3f4f7'; g.font = '700 54px system-ui, sans-serif'; g.fillText(rw[1], W - 160, y + 4);
-      y += 140;
-    });
-    g.textAlign = 'center'; g.fillStyle = '#9ba1b0'; g.font = '500 36px system-ui, sans-serif';
-    g.fillText('Check yours: ' + SITE_URL.replace('https://', ''), cx, H - 90);
+    var cx, y;
+    if (size === 'x') {
+      g.fillStyle = '#e31337'; hexPath(g, 150, 130, 52); g.fill();
+      g.textAlign = 'left'; g.fillStyle = '#f3f4f7'; g.font = '600 54px system-ui, sans-serif';
+      g.fillText('My Hive follow-back rate', 100, 290);
+      g.fillStyle = '#ff3b57'; g.font = '800 270px system-ui, sans-serif'; g.fillText(L.rate + '%', 90, 545);
+      if (nameText) { g.fillStyle = '#f3f4f7'; g.font = '600 52px system-ui, sans-serif'; g.fillText(nameText, 100, 650); }
+      y = 270;
+      rows.forEach(function (rw) {
+        g.fillStyle = '#1f222b'; g.fillRect(860, y - 72, 640, 120);
+        g.textAlign = 'left'; g.fillStyle = '#9ba1b0'; g.font = '500 40px system-ui, sans-serif'; g.fillText(rw[0], 895, y);
+        g.textAlign = 'right'; g.fillStyle = '#f3f4f7'; g.font = '700 54px system-ui, sans-serif'; g.fillText(rw[1], 1465, y + 4);
+        y += 160;
+      });
+      g.textAlign = 'center'; g.fillStyle = '#9ba1b0'; g.font = '500 34px system-ui, sans-serif';
+      g.fillText('Check yours: ' + SITE_URL.replace('https://', ''), W / 2, H - 50);
+    } else {
+      cx = W / 2;
+      var cy = size === 'story' ? 330 : 190;
+      g.fillStyle = '#e31337'; hexPath(g, cx, cy, 70); g.fill();
+      g.textAlign = 'center'; g.fillStyle = '#f3f4f7';
+      g.font = '600 52px system-ui, sans-serif'; g.fillText('My Hive follow-back rate', cx, cy + 170);
+      g.fillStyle = '#ff3b57'; g.font = '800 250px system-ui, sans-serif'; g.fillText(L.rate + '%', cx, cy + 420);
+      if (nameText) { g.fillStyle = '#f3f4f7'; g.font = '600 52px system-ui, sans-serif'; g.fillText(nameText, cx, cy + 495); }
+      y = cy + 640;
+      rows.forEach(function (rw) {
+        g.fillStyle = '#1f222b'; g.fillRect(120, y - 70, W - 240, 110);
+        g.textAlign = 'left'; g.fillStyle = '#9ba1b0'; g.font = '500 40px system-ui, sans-serif'; g.fillText(rw[0], 160, y);
+        g.textAlign = 'right'; g.fillStyle = '#f3f4f7'; g.font = '700 54px system-ui, sans-serif'; g.fillText(rw[1], W - 160, y + 4);
+        y += 140;
+      });
+      g.textAlign = 'center'; g.fillStyle = '#9ba1b0'; g.font = '500 36px system-ui, sans-serif';
+      g.fillText('Check yours: ' + SITE_URL.replace('https://', ''), cx, H - 90);
+    }
     var can = !state.example;
     ['savepic', 'sharepic', 'postx', 'copytxt'].forEach(function (id) { $(id).disabled = !can; });
     $('shareNote').textContent = can ? 'X cannot attach the picture for you: save it first, then add it to your post.' : 'Sharing is switched off while example data is showing.';
@@ -704,6 +848,96 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     return C.shareText({ rate: L.rate, notBack: L.notBack.length, following: L.following }, SITE_URL, SHARE_TAG);
   }
   function canvasBlob(cb) { $('cv').toBlob(cb, 'image/png'); }
+
+  /* ---------- Hive posts block ---------- */
+  var news = { tab: 'trending', cache: {}, loading: false };
+  function newsParams(tab) {
+    return tab === 'account'
+      ? ['bridge.get_account_posts', { sort: 'posts', account: NEWS_ACCOUNT, limit: NEWS_COUNT + 5 }]
+      : ['bridge.get_ranked_posts', { sort: tab, tag: '', limit: NEWS_COUNT + 5 }];
+  }
+  function renderNews(msg, isErr) {
+    var box = $('newsRows'); box.textContent = '';
+    document.querySelectorAll('#newsTabs button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-news') === news.tab));
+    });
+    var items = news.cache[news.tab];
+    if (msg || !items) {
+      var m = document.createElement('div'); m.className = 'empty' + (isErr ? ' err' : ''); m.textContent = msg || 'Loading...';
+      box.appendChild(m); return;
+    }
+    if (!items.length) {
+      var e = document.createElement('div'); e.className = 'empty'; e.textContent = 'No posts found.'; box.appendChild(e); return;
+    }
+    items.forEach(function (p) {
+      var row = document.createElement('div'); row.className = 'row';
+      var a = document.createElement('a'); a.className = 'name'; a.textContent = p.title;
+      a.href = C.postUrl(state.front, p.author, p.permlink); a.target = '_blank'; a.rel = 'noopener noreferrer';
+      var meta = document.createElement('span'); meta.className = 'meta'; meta.textContent = C.postMeta(p);
+      row.appendChild(a); row.appendChild(meta); box.appendChild(row);
+    });
+  }
+  function loadNews(tab) {
+    news.tab = tab;
+    if (news.cache[tab]) { renderNews(); return; }
+    renderNews('Loading...');
+    var pr = newsParams(tab);
+    rpc(pr[0], pr[1]).then(function (res) {
+      news.cache[tab] = C.normalizePosts(res, NEWS_COUNT);
+      if (news.tab === tab) renderNews();
+    }, function (e) {
+      if (news.tab === tab) renderNews('Could not load posts (' + (e.message || 'error') + '). Try again later.', true);
+    });
+  }
+
+  /* ---------- live blockchain activity ---------- */
+  var ACT_BLOCKS = 6, ACT_EVERY_MS = 15000, ACT_MAX_AUTO = 20;
+  var act = { timer: null, runs: 0, busy: false, lastStart: 0 };
+  function actStop() { if (act.timer) { clearInterval(act.timer); act.timer = null; } }
+  function actStart(force) {
+    // the browser also fires a 'toggle' event for a block that starts open: ignore a second start right after the first
+    if (!force && act.timer && Date.now() - act.lastStart < 1500) return;
+    act.lastStart = Date.now();
+    actStop(); act.runs = 0; loadAct();
+    act.timer = setInterval(function () {
+      if (document.hidden || act.busy) return;
+      if (++act.runs > ACT_MAX_AUTO) { actStop(); $('actNote').textContent = 'Automatic refresh paused. Press Refresh to read the newest blocks.'; return; }
+      loadAct();
+    }, ACT_EVERY_MS);
+  }
+  function renderAct(r, head) {
+    var box = $('actStats'); box.textContent = '';
+    var items = [['Newest block', '#' + fmt(head), ''], ['Block producer', r.witness ? '@' + r.witness : '-', ''],
+      ['Actions per second', String(r.perSecond), ''], ['Votes', fmt(r.votes), ''], ['Posts', fmt(r.posts), ''],
+      ['Replies', fmt(r.replies), ''], ['Transfers', fmt(r.transfers), ''], ['Follows', fmt(r.follows), ''],
+      ['Unfollows', fmt(r.unfollows), 'hot']];
+    items.forEach(function (it) {
+      var d = document.createElement('div'); d.className = 'stat ' + it[2];
+      var b = document.createElement('b'); b.textContent = it[1];
+      var sp = document.createElement('span'); sp.textContent = it[0];
+      d.appendChild(b); d.appendChild(sp); box.appendChild(d);
+    });
+  }
+  function loadAct() {
+    if (act.busy) return;
+    act.busy = true; $('actRefresh').disabled = true;
+    $('actNote').textContent = 'Reading the newest blocks...';
+    rpc('condenser_api.get_dynamic_global_properties', []).then(function (g) {
+      var head = Number(g && g.head_block_number);
+      if (!isFinite(head) || head < ACT_BLOCKS) throw new Error('Bad answer from the node');
+      var calls = [];
+      for (var i = 0; i < ACT_BLOCKS; i++) calls.push(rpc('condenser_api.get_block', [head - i]));
+      return Promise.all(calls).then(function (blocks) {
+        var r = C.summarizeBlocks(blocks);
+        if (!r.blocks) throw new Error('No block data');
+        renderAct(r, head);
+        $('actNote').textContent = 'Based on the latest ' + r.blocks + ' blocks (about ' + (r.blocks * 3) + ' seconds). Updated ' +
+          new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '. No account names are shown.';
+      });
+    }).catch(function (e) {
+      $('actNote').textContent = 'Could not read the blocks (' + (e.message || 'error') + '). Press Refresh to try again.';
+    }).then(function () { act.busy = false; $('actRefresh').disabled = false; });
+  }
 
   /* ---------- visit count ---------- */
   function loadVisits() {
@@ -720,10 +954,16 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
     $('user').addEventListener('keydown', function (e) { if (e.key === 'Enter') start($('user').value); });
     $('example').addEventListener('click', startExample);
     $('q').addEventListener('input', function () { state.q = this.value; state.page = 0; render(); });
-    $('per').addEventListener('change', function () { state.per = Number(this.value); state.page = 0; savePrefs(); render(); });
+    ['per', 'perTop'].forEach(function (id) {
+      $(id).addEventListener('change', function () {
+        state.per = Number(this.value); state.page = 0; $('per').value = this.value; $('perTop').value = this.value; savePrefs(); render();
+      });
+    });
     $('front').addEventListener('change', function () { state.front = this.value; savePrefs(); render(); });
     $('prev').addEventListener('click', function () { state.page = Math.max(0, state.page - 1); render(); window.scrollTo({ top: $('tabs').offsetTop - 20 }); });
     $('next').addEventListener('click', function () { state.page++; render(); window.scrollTo({ top: $('tabs').offsetTop - 20 }); });
+    $('prevTop').addEventListener('click', function () { state.page = Math.max(0, state.page - 1); render(); });
+    $('nextTop').addEventListener('click', function () { state.page++; render(); });
     $('csv').addEventListener('click', downloadCsv);
     function resetBoxNormal() {
       var box = $('resetBox'); box.textContent = '';
@@ -748,7 +988,8 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
         drawShare();
       });
     });
-    $('savepic').addEventListener('click', function () { canvasBlob(function (b) { if (b) downloadBlob(b, 'hive-follow-back-' + state.size + '.png'); }); });
+    $('showname').addEventListener('change', function () { drawShare(); });
+    $('savepic').addEventListener('click', function () { canvasBlob(function (b) { if (b) downloadBlob(b, 'hive-follow-back-' + (state.size === 'x' ? 'x-post' : state.size) + '.png'); }); });
     $('sharepic').addEventListener('click', function () {
       canvasBlob(function (b) {
         if (!b) return;
@@ -773,6 +1014,14 @@ footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
       var note = document.createElement('span'); note.className = 'small'; note.textContent = ' (work in progress)';
       ins.textContent = ''; ins.appendChild(la); ins.appendChild(note);
     }
+    $('news').addEventListener('toggle', function () { if (this.open && !news.cache[news.tab]) loadNews(news.tab); });
+    document.querySelectorAll('#newsTabs button').forEach(function (b) {
+      b.addEventListener('click', function () { loadNews(this.getAttribute('data-news')); });
+    });
+    $('front').addEventListener('change', function () { if (news.cache[news.tab]) renderNews(); });
+    $('activity').addEventListener('toggle', function () { if (this.open) actStart(); else actStop(); savePrefs(); });
+    if ($('activity').open) actStart();
+    $('actRefresh').addEventListener('click', function () { actStart(true); });
     loadVisits();
   }
   init();
