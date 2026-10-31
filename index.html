@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hive Unfollow Check: who does not follow you back</title>
+<meta name="description" content="Type your Hive username and see who you follow that does not follow you back. Free, no login, no keys. Reads public blockchain data only.">
+<meta property="og:title" content="Hive Unfollow Check">
+<meta property="og:description" content="See who you follow on Hive that does not follow you back. Free, no login.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://katerinaramm1.github.io/hive-unfollow/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23e31337' d='M16 2l12 7v14l-12 7-12-7V9z'/%3E%3C/svg%3E">
+<style>
+:root{--red:#e31337;--red2:#ff3b57;--bg:#121318;--card:#1c1e26;--card2:#232632;--line:#2e3240;--text:#f3f4f7;--muted:#9ba1b0;--ok:#3ecf8e;--warn:#f5b84b}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--red2)}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;gap:12px;margin:8px 0 4px}
+.hex{width:34px;height:34px;flex:none;background:var(--red);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+h1{font-size:1.45rem;margin:0;line-height:1.2}
+.lead{color:var(--muted);margin:4px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.card h2{font-size:1.05rem;margin:0 0 8px}
+label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:6px}
+.input-row{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text],input[type=search],select{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;min-width:0}
+input[type=text]{flex:1 1 220px}
+input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);padding:10px 14px}
+button:hover{border-color:#4a5066}
+button.primary{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+button.primary:hover{background:var(--red2)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.link{background:none;border:none;color:var(--red2);padding:0;text-decoration:underline}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.hint{font-size:.88rem;color:var(--muted);margin:8px 0 0}
+.status{margin:10px 0 0;min-height:1.4em}
+.err{color:#ff8a9b}
+.bar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;width:0;background:var(--red);transition:width .2s}
+.attention{border-color:#5b4a22;background:#231f14}
+.attention h2{color:var(--warn)}
+.attention ul{margin:6px 0 0 18px;padding:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--card2);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:1.6rem;line-height:1.1}
+.stat span{color:var(--muted);font-size:.85rem}
+.stat.hot b{color:var(--red2)}
+.notice{border-left:3px solid var(--red);background:var(--card2);padding:10px 12px;border-radius:0 10px 10px 0;margin:12px 0 0;font-size:.92rem}
+.notice.good{border-color:var(--ok)}
+.notice.warn{border-color:var(--warn)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px}
+.tab{padding:8px 12px;border-radius:99px;background:var(--card2);border:1px solid var(--line)}
+.tab[aria-selected=true]{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+.tab small{opacity:.85;margin-left:4px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.tools input[type=search]{flex:1 1 180px}
+.progress{font-weight:600;margin:4px 0 10px}
+.rows{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);background:var(--card)}
+.row:first-child{border-top:none}
+.row:nth-child(even){background:#1f222b}
+.row .name{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;font-weight:600;color:var(--text);text-decoration:none}
+.row .name:hover{color:var(--red2);text-decoration:underline}
+.row .meta{color:var(--muted);font-size:.82rem;white-space:nowrap}
+.row.struck .name{text-decoration:line-through;color:var(--muted)}
+.row.struck{opacity:.6}
+.row.done .name{text-decoration:line-through;color:var(--muted)}
+.empty{padding:22px;text-align:center;color:var(--muted)}
+.pager{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px}
+.share-wrap canvas{max-width:100%;height:auto;border-radius:12px;border:1px solid var(--line);margin-top:10px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.seg{display:inline-flex;gap:6px;flex-wrap:wrap}
+.seg button[aria-pressed=true]{background:var(--red);border-color:var(--red);color:#fff}
+details.privacy summary{cursor:pointer;font-weight:600}
+details.privacy h3{font-size:1rem;margin:14px 0 4px}
+details.privacy p,details.privacy li{font-size:.93rem}
+footer{margin-top:28px;color:var(--muted);font-size:.9rem}
+footer .links{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0}
+.confirm{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.hidden{display:none!important}
+@media (max-width:520px){.row{flex-wrap:wrap}.row .meta{order:3;width:100%}}
+</style>
+<script data-goatcounter="https://hive-unfollow.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="wrap">
+<header><div class="hex" aria-hidden="true"></div><h1>Hive Unfollow Check</h1></header>
+<p class="lead">See who you follow on Hive that does not follow you back. Free, no login, no keys.</p>
+
+<section class="card" id="start">
+  <h2>1. Type your Hive username</h2>
+  <label for="user">Your Hive account name (with or without @)</label>
+  <div class="input-row">
+    <input type="text" id="user" placeholder="for example: alice" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="primary" id="go">Check my account</button>
+    <button id="example">Try an example</button>
+  </div>
+  <p class="hint">The page reads your public follower and following lists from a Hive node. You never type a key or password. It cannot unfollow anyone for you.</p>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+  <div class="bar hidden" id="bar"><i id="barfill"></i></div>
+</section>
+
+<section class="card attention hidden" id="attention">
+  <h2>Attention: go at a calm pace</h2>
+  <ul class="small">
+    <li>Unfollowing on Hive is a blockchain action. It uses a small part of your Resource Credits, which refill over time.</li>
+    <li>Work in small batches and take breaks. Stop for the day if your Hive app tells you your Resource Credits are low.</li>
+    <li>This page never unfollows for you. You open a profile and press Unfollow yourself.</li>
+    <li>Check a profile before unfollowing: someone may be a friend, a project, or an account you want to keep reading.</li>
+  </ul>
+</section>
+
+<div id="results" class="hidden">
+  <section class="card">
+    <h2 id="resultsTitle">Your numbers</h2>
+    <div class="stats" id="stats"></div>
+    <div id="compare"></div>
+    <div class="notice small">The order of the lists comes from the Hive node: it returns the newest follow first. So "oldest follow first" is based on that order, not on a date. Hive nodes may show slightly different numbers from your profile page when you changed follows a moment ago.</div>
+  </section>
+
+  <section class="card">
+    <h2>2. Your lists</h2>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="tools">
+      <input type="search" id="q" placeholder="Search a username" aria-label="Search a username">
+      <label class="small" style="margin:0" for="front">Open profiles on</label>
+      <select id="front" aria-label="Hive site to open profiles on">
+        <option value="peakd">PeakD</option>
+        <option value="ecency">Ecency</option>
+        <option value="hiveblog">Hive.blog</option>
+      </select>
+      <button id="csv">Download CSV</button>
+    </div>
+    <div class="progress" id="progress"></div>
+    <div id="welcome"></div>
+    <div class="rows" id="rows"></div>
+    <div class="pager">
+      <div>
+        <button id="prev">Previous</button>
+        <button id="next">Next</button>
+        <span class="muted small" id="pageinfo"></span>
+      </div>
+      <label class="small" style="margin:0">Per page
+        <select id="per"><option>25</option><option selected>50</option><option>100</option><option>500</option></select>
+      </label>
+    </div>
+    <div class="confirm" id="resetBox">
+      <button id="reset" class="link small">Reset progress</button>
+    </div>
+  </section>
+
+  <section class="card share-wrap">
+    <h2>3. Share your result (numbers only)</h2>
+    <p class="hint" style="margin-top:0">The picture shows your follow-back rate and counts. It never shows usernames.</p>
+    <div class="seg" id="sizes" role="group" aria-label="Picture size">
+      <button data-size="post" aria-pressed="true">Post (4:5)</button>
+      <button data-size="story" aria-pressed="false">Story (9:16)</button>
+    </div>
+    <canvas id="cv" width="1080" height="1350" aria-label="Share picture preview"></canvas>
+    <div class="btns">
+      <button class="primary" id="savepic">Save image</button>
+      <button id="sharepic">Share...</button>
+      <button id="postx">Post on X</button>
+      <button id="copytxt">Copy text</button>
+    </div>
+    <p class="hint" id="shareNote"></p>
+  </section>
+</div>
+
+<section class="card">
+  <details class="privacy" id="privacy">
+    <summary>Privacy policy (click to read)</summary>
+    <p class="muted small">Last updated 31 October 2026.</p>
+    <h3>What the page does</h3>
+    <p>You type a Hive account name. Your browser asks a public Hive node for that account's follower and following lists. These lists are already public on the Hive blockchain. The page compares them in your browser. There is no server of ours and no database.</p>
+    <h3>What leaves your browser</h3>
+    <ul>
+      <li>The account name you type, sent to a public Hive node (api.hive.blog, and if it is down, other public nodes). The node operators can see the request, as with any website that reads Hive.</li>
+      <li>Normal web requests to GitHub Pages (where this page is hosted).</li>
+      <li>A visit counter (GoatCounter). It counts page views without cookies and without personal profiles. It does not receive the username you type.</li>
+    </ul>
+    <h3>What is stored</h3>
+    <p>Only in your browser, on your device: the list of profiles you opened with the time you opened them, your page-size choice, and the Hive site you chose. This is stored under your username so it carries over when you come back. It is never sent anywhere. "Reset progress" deletes the opened list. Clearing your browser's site data deletes everything. The follower lists themselves are not stored; you check again each visit.</p>
+    <h3>Passwords and keys</h3>
+    <p>The page never asks for, receives or stores a password, private key or Hive Keychain access. It cannot post, vote, follow or unfollow.</p>
+    <h3>Outside links</h3>
+    <p>Profile links open PeakD, Ecency or Hive.blog. The "Post on X" button opens X. The footer links to other tools and projects by the same author (including the author's Hive profile). Those are outside sites with their own policies.</p>
+    <h3>Children</h3>
+    <p>The page is not aimed at children.</p>
+    <h3>Contact</h3>
+    <p>Questions: <a href="https://x.com/katerinaramm1" target="_blank" rel="noopener">@katerinaramm1 on X</a> or <a href="https://peakd.com/@katerinaramm" target="_blank" rel="noopener">@katerinaramm on Hive</a>.</p>
+  </details>
+</section>
+
+<footer>
+  <div class="links">
+    <strong>More unfollow tools:</strong>
+    <a href="https://katerinaramm1.github.io/insta-unfollow/" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://katerinaramm1.github.io/x-unfollow/" target="_blank" rel="noopener">X</a>
+    <a href="https://katerinaramm1.github.io/linkedin-unfollow/" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="https://katerinaramm1.github.io/tiktok-unfollow/" target="_blank" rel="noopener">TikTok</a>
+  </div>
+  <div class="links">
+    <strong>Coming soon:</strong>
+    <span id="insights">Hive Insights <span class="small">(work in progress)</span></span>
+  </div>
+  <div>Created by <a href="https://x.com/katerinaramm1" target="_blank" rel="noopener">@katerinaramm1</a> on X and <a href="https://peakd.com/@katerinaramm" target="_blank" rel="noopener">@katerinaramm</a> on Hive, with the help of Claude · <a href="#privacy" id="privlink">Privacy</a> · Page views so far: <span id="visits">&ndash;</span></div>
+</footer>
+</div>
+<script>
+/* Hive Unfollow Check - core logic (no browser needed, tested in test.js) */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.HiveCore = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var PAGE_LIMIT = 1000; // Hivemind caps one call at 1000 names
+  var MAX_PAGES = 300;   // safety stop: 300,000 names
+
+  var FRONTENDS = {
+    peakd: { label: 'PeakD', url: 'https://peakd.com/@' },
+    ecency: { label: 'Ecency', url: 'https://ecency.com/@' },
+    hiveblog: { label: 'Hive.blog', url: 'https://hive.blog/@' }
+  };
+
+  // Hive account names: 3-16 chars, lowercase letters, digits, dots, dashes.
+  function cleanName(s) {
+    s = String(s == null ? '' : s).trim().toLowerCase();
+    var at = s.indexOf('/@');
+    if (at > -1) s = s.slice(at + 2); // pasted profile link, with or without https://
+    s = s.replace(/^@+/, '').replace(/[\/?#].*$/, '');
+    return s;
+  }
+  function isValidName(s) {
+    return /^[a-z][a-z0-9-]{1,15}(\.[a-z0-9-]{1,16})*$/.test(s) && s.length >= 3 && s.length <= 16;
+  }
+
+  function frontendUrl(front, name) {
+    var f = FRONTENDS[front] || FRONTENDS.peakd;
+    return f.url + encodeURIComponent(name);
+  }
+
+  // result: array of {follower, following, what}. field: 'follower' or 'following'.
+  function pickNames(result, field) {
+    var out = [];
+    if (!Array.isArray(result)) return out;
+    for (var i = 0; i < result.length; i++) {
+      var r = result[i];
+      var n = typeof r === 'string' ? r : r && r[field];
+      if (typeof n === 'string' && n) out.push(n.toLowerCase());
+    }
+    return out;
+  }
+
+  // rpc(method, params) -> Promise of the "result" value.
+  // method: 'get_followers' or 'get_following'. Order from the node: newest follow first.
+  function fetchList(rpc, account, method, onProgress) {
+    var field = method === 'get_followers' ? 'follower' : 'following';
+    var seen = {};
+    var names = [];
+    function step(start, page) {
+      return rpc('condenser_api.' + method, [account, start, 'blog', PAGE_LIMIT]).then(function (res) {
+        var batch = pickNames(res, field);
+        var added = 0;
+        for (var i = 0; i < batch.length; i++) {
+          if (!seen[batch[i]]) { seen[batch[i]] = 1; names.push(batch[i]); added++; }
+        }
+        if (onProgress) onProgress(method, names.length);
+        var rawCount = Array.isArray(res) ? res.length : 0;
+        if (rawCount < PAGE_LIMIT || added === 0 || page + 1 >= MAX_PAGES) {
+          return { names: names, truncated: page + 1 >= MAX_PAGES && rawCount >= PAGE_LIMIT };
+        }
+        return step(batch[batch.length - 1], page + 1);
+      });
+    }
+    return step('', 0);
+  }
+
+  // followers / following: arrays of names, newest follow first (node order).
+  function computeLists(followers, following) {
+    var fSet = {}, gSet = {};
+    followers.forEach(function (n) { fSet[n] = 1; });
+    following.forEach(function (n) { gSet[n] = 1; });
+    var notBack = [], mutuals = [], fans = [];
+    // rank 1 = most recent follow in the node order
+    following.forEach(function (n, i) {
+      var item = { name: n, rank: i + 1 };
+      if (fSet[n]) mutuals.push(item); else notBack.push(item);
+    });
+    followers.forEach(function (n, i) { if (!gSet[n]) fans.push({ name: n, rank: i + 1 }); });
+    notBack.reverse(); // oldest follow first
+    var rate = following.length ? Math.round((mutuals.length / following.length) * 1000) / 10 : 0;
+    return { notBack: notBack, mutuals: mutuals, fans: fans, rate: rate,
+      followers: followers.length, following: following.length };
+  }
+
+  // opened: { name: timestampMs }
+  function splitDone(notBack, opened) {
+    var todo = [], done = [];
+    notBack.forEach(function (it) {
+      if (opened[it.name]) done.push({ name: it.name, rank: it.rank, time: opened[it.name] });
+      else todo.push(it);
+    });
+    done.sort(function (a, b) { return b.time - a.time; });
+    return { todo: todo, done: done };
+  }
+
+  function sameLocalDay(a, b) {
+    var x = new Date(a), y = new Date(b);
+    return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+  }
+
+  function progressStats(opened, now, remaining, batch) {
+    var total = 0, today = 0;
+    Object.keys(opened).forEach(function (k) {
+      total++;
+      if (sameLocalDay(opened[k], now)) today++;
+    });
+    return { opened: total, today: today, remaining: remaining,
+      batches: remaining > 0 ? Math.ceil(remaining / batch) : 0 };
+  }
+
+  function progressLine(p) {
+    var n = function (x) { return Number(x).toLocaleString('en-US'); };
+    var s = n(p.opened) + ' opened · ' + n(p.today) + ' today · ';
+    if (p.remaining > 0) s += 'about ' + p.batches + ' ' + (p.batches === 1 ? 'batch' : 'batches') + ' to go';
+    else s += 'nothing left in this list';
+    return s;
+  }
+
+  function cleanOpened(obj) {
+    var out = {};
+    if (obj && typeof obj === 'object') {
+      Object.keys(obj).forEach(function (k) {
+        var v = Number(obj[k]);
+        if (isFinite(v) && v > 0 && typeof k === 'string' && k.length < 40) out[k] = v;
+      });
+    }
+    return out;
+  }
+
+  function csvCell(v) {
+    var s = String(v == null ? '' : v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    if (/[",\n\r]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function toCsv(rows, front) {
+    var lines = ['username,profile_link,follow_order_rank'];
+    rows.forEach(function (r) {
+      lines.push([csvCell(r.name), csvCell(frontendUrl(front, r.name)), csvCell(r.rank || '')].join(','));
+    });
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+
+  function filterList(list, q) {
+    q = cleanName(q);
+    if (!q) return list;
+    return list.filter(function (it) { return it.name.indexOf(q) !== -1; });
+  }
+
+  // profile: { followers, following } from the profile page; lens: our list sizes
+  function compareCounts(profile, lens) {
+    if (!profile) return null;
+    var mf = Math.max(0, (profile.followers || 0) - lens.followers);
+    var mg = Math.max(0, (profile.following || 0) - lens.following);
+    var tol = function (p) { return Math.max(3, Math.round(p * 0.005)); };
+    return {
+      missingFollowers: mf, missingFollowing: mg,
+      ok: mf <= tol(profile.followers || 0) && mg <= tol(profile.following || 0)
+    };
+  }
+
+  function shareText(stats, url, tag) {
+    var t = 'I checked who does not follow me back on Hive: ' + stats.rate + '% follow back, ' +
+      stats.notBack.toLocaleString('en-US') + ' of the ' + stats.following.toLocaleString('en-US') +
+      ' accounts I follow do not. Try it: ' + url;
+    if (tag) t += ' ' + tag;
+    return t;
+  }
+
+  return {
+    PAGE_LIMIT: PAGE_LIMIT, FRONTENDS: FRONTENDS,
+    cleanName: cleanName, isValidName: isValidName, frontendUrl: frontendUrl,
+    pickNames: pickNames, fetchList: fetchList, computeLists: computeLists,
+    splitDone: splitDone, sameLocalDay: sameLocalDay, progressStats: progressStats,
+    progressLine: progressLine, cleanOpened: cleanOpened, toCsv: toCsv, csvCell: csvCell,
+    filterList: filterList, compareCounts: compareCounts, shareText: shareText
+  };
+});
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var C = window.HiveCore;
+  var GC_CODE = 'hive-unfollow';
+  var SITE_URL = 'https://katerinaramm1.github.io/hive-unfollow/';
+  var SHARE_TAG = ''; // to be decided with the owner (account or hashtag)
+  var INSIGHTS_URL = ''; // address of Hive Insights; while empty it shows as plain text
+  var BATCH = 100;
+  var NODES = ['https://api.hive.blog', 'https://api.deathwing.me', 'https://hive-api.arcange.eu', 'https://api.openhive.network'];
+  var TIMEOUT_MS = 20000;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = {
+    user: '', example: false, lists: null, opened: {}, tab: 'notBack', page: 0,
+    per: 50, q: '', front: 'peakd', size: 'post', profile: null, welcomeShown: false
+  };
+
+  /* ---------- storage (always in try/catch) ---------- */
+  function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function lsDel(k) { try { window.localStorage.removeItem(k); } catch (e) {} }
+  function userKey(u) { return 'hiveUnfollow.v1.user.' + u; }
+  function loadPrefs() {
+    try {
+      var p = JSON.parse(lsGet('hiveUnfollow.v1.prefs') || '{}');
+      if ([25, 50, 100, 500].indexOf(p.per) > -1) state.per = p.per;
+      if (C.FRONTENDS[p.front]) state.front = p.front;
+    } catch (e) {}
+    $('per').value = String(state.per);
+    $('front').value = state.front;
+  }
+  function savePrefs() { lsSet('hiveUnfollow.v1.prefs', JSON.stringify({ per: state.per, front: state.front })); }
+  function loadProgress(u) {
+    try { return C.cleanOpened(JSON.parse(lsGet(userKey(u)) || '{}').opened); } catch (e) { return {}; }
+  }
+  function saveProgress() {
+    if (state.example || !state.user) return;
+    lsSet(userKey(state.user), JSON.stringify({ opened: state.opened }));
+  }
+
+  /* ---------- network ---------- */
+  var nodeIdx = 0;
+  function post(node, method, params) {
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function () { ctl.abort(); }, TIMEOUT_MS) : null;
+    return fetch(node, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', method: method, params: params, id: 1 }),
+      signal: ctl ? ctl.signal : undefined
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (timer) clearTimeout(timer);
+      if (!j || j.error || j.result === undefined) throw new Error((j && j.error && j.error.message) || 'Bad answer');
+      return j.result;
+    }, function (e) { if (timer) clearTimeout(timer); throw e; });
+  }
+  function rpc(method, params) {
+    var tried = 0;
+    function attempt() {
+      var node = NODES[nodeIdx % NODES.length];
+      return post(node, method, params).catch(function (e) {
+        tried++;
+        if (tried >= NODES.length) throw new Error('No Hive node answered (' + e.message + '). Try again in a minute.');
+        nodeIdx++;
+        return attempt();
+      });
+    }
+    return attempt();
+  }
+
+  /* ---------- helpers ---------- */
+  function fmt(n) { return Number(n).toLocaleString('en-US'); }
+  function setStatus(msg, isErr) {
+    var s = $('status'); s.textContent = msg || ''; s.className = 'status' + (isErr ? ' err' : '');
+  }
+  function bar(p) {
+    var b = $('bar');
+    if (p == null) { b.classList.add('hidden'); return; }
+    b.classList.remove('hidden'); $('barfill').style.width = Math.max(2, Math.min(100, p)) + '%';
+  }
+  function current() {
+    var L = state.lists;
+    var sp = C.splitDone(L.notBack, state.opened);
+    return { todo: sp.todo, done: sp.done, mutuals: L.mutuals, fans: L.fans };
+  }
+
+  /* ---------- main flow ---------- */
+  function start(name) {
+    var u = C.cleanName(name);
+    if (!C.isValidName(u)) { setStatus('That does not look like a Hive username (3 to 16 letters, digits, dots or dashes).', true); return; }
+    state.example = false; state.user = u; state.profile = null;
+    $('go').disabled = true; $('results').classList.add('hidden'); $('attention').classList.add('hidden');
+    setStatus('Reading the lists for @' + u + '...'); bar(3);
+    var total = { get_followers: 0, get_following: 0 };
+    var onP = function (m, n) {
+      total[m] = n; setStatus('Reading the lists for @' + u + ': ' + fmt(total.get_followers) + ' followers, ' + fmt(total.get_following) + ' following so far...');
+      bar(Math.min(90, 5 + Math.sqrt(total.get_followers + total.get_following) * 1.5));
+    };
+    Promise.all([C.fetchList(rpc, u, 'get_followers', onP), C.fetchList(rpc, u, 'get_following', onP)]).then(function (r) {
+      var fl = r[0], fg = r[1];
+      if (!fl.names.length && !fg.names.length) {
+        throw new Error('No followers and no following found for @' + u + '. Check the spelling.');
+      }
+      state.lists = C.computeLists(fl.names, fg.names);
+      state.lists.truncated = fl.truncated || fg.truncated;
+      state.opened = loadProgress(u);
+      state.tab = 'notBack'; state.page = 0; state.q = ''; $('q').value = ''; state.welcomeShown = false;
+      return rpc('bridge.get_profile', { account: u }).then(function (p) {
+        if (p && p.stats) state.profile = { followers: p.stats.followers, following: p.stats.following };
+      }, function () {});
+    }).then(function () {
+      setStatus('Done. Lists for @' + u + ' are ready.'); bar(null);
+      show();
+    }).catch(function (e) {
+      setStatus(e.message || 'Something went wrong.', true); bar(null);
+    }).then(function () { $('go').disabled = false; });
+  }
+
+  function startExample() {
+    var fl = [], fg = [], i;
+    for (i = 0; i < 180; i++) fl.push('fan' + (i + 100));
+    for (i = 0; i < 260; i++) fg.push('friend' + (i + 100));
+    for (i = 0; i < 120; i++) fl.push('friend' + (i + 100)); // some mutuals
+    state.example = true; state.user = 'example'; state.profile = null;
+    state.lists = C.computeLists(fl, fg); state.opened = {}; state.tab = 'notBack'; state.page = 0; state.q = '';
+    setStatus('Showing made-up example data. Nothing is saved.'); show();
+  }
+
+  function show() {
+    $('results').classList.remove('hidden'); $('attention').classList.remove('hidden');
+    $('resultsTitle').textContent = state.example ? 'Example numbers (made up)' : 'Numbers for @' + state.user;
+    var L = state.lists;
+    var stats = $('stats'); stats.textContent = '';
+    [['Follow back rate', L.rate + '%', ''], ['You follow', fmt(L.following), ''],
+     ['Follow you back', fmt(L.mutuals.length), ''], ['Do not follow back', fmt(L.notBack.length), 'hot'],
+     ['Your followers', fmt(L.followers), ''], ['Fans (you do not follow)', fmt(L.fans.length), '']].forEach(function (s) {
+      var d = document.createElement('div'); d.className = 'stat ' + s[2];
+      var b = document.createElement('b'); b.textContent = s[1];
+      var sp = document.createElement('span'); sp.textContent = s[0];
+      d.appendChild(b); d.appendChild(sp); stats.appendChild(d);
+    });
+    renderCompare(); render(); drawShare();
+    $('results').scrollIntoView && $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderCompare() {
+    var box = $('compare'); box.textContent = '';
+    var L = state.lists;
+    if (L.truncated) {
+      var t = document.createElement('div'); t.className = 'notice warn small';
+      t.textContent = 'This account is very large, so the page stopped reading after a safety limit. The lists are incomplete.';
+      box.appendChild(t);
+    }
+    var cmp = C.compareCounts(state.profile, { followers: L.followers, following: L.following });
+    if (!cmp) return;
+    var d = document.createElement('div'); d.className = 'notice small ' + (cmp.ok ? 'good' : 'warn');
+    d.textContent = cmp.ok
+      ? 'Check against your profile: the lists match the counts the Hive node reports for your account (' + fmt(state.profile.followers) + ' followers, ' + fmt(state.profile.following) + ' following).'
+      : 'Check against your profile: the node reports ' + fmt(state.profile.followers) + ' followers and ' + fmt(state.profile.following) +
+        ' following, but the lists hold ' + fmt(L.followers) + ' and ' + fmt(L.following) + '. About ' + fmt(cmp.missingFollowers) + ' followers and ' +
+        fmt(cmp.missingFollowing) + ' following are missing, so treat the not-following-back list as approximate and try again later.';
+    box.appendChild(d);
+  }
+
+  /* ---------- list view ---------- */
+  function tabsInfo() {
+    var c = current();
+    return [['notBack', 'Not following back', c.todo.length], ['done', 'Done', c.done.length],
+            ['mutuals', 'Mutuals', c.mutuals.length], ['fans', 'Fans', c.fans.length]];
+  }
+  function activeList() {
+    var c = current();
+    var list = state.tab === 'notBack' ? c.todo : state.tab === 'done' ? c.done : state.tab === 'mutuals' ? c.mutuals : c.fans;
+    return C.filterList(list, state.q);
+  }
+  function renderTabs() {
+    var tabs = $('tabs'); tabs.textContent = '';
+    tabsInfo().forEach(function (t) {
+      var b = document.createElement('button'); b.className = 'tab'; b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(state.tab === t[0]));
+      b.textContent = t[1];
+      var s = document.createElement('small'); s.textContent = fmt(t[2]); b.appendChild(s);
+      b.addEventListener('click', function () { state.tab = t[0]; state.page = 0; render(); });
+      tabs.appendChild(b);
+    });
+  }
+  function render() {
+    renderTabs();
+    var c = current(), list = activeList();
+    var p = C.progressStats(state.opened, Date.now(), c.todo.length, BATCH);
+    var pe = $('progress');
+    pe.textContent = state.tab === 'notBack' || state.tab === 'done' ? C.progressLine(p) : '';
+    pe.style.display = pe.textContent ? '' : 'none';
+    var w = $('welcome'); w.textContent = '';
+    if (!state.welcomeShown && !state.example && p.opened > 0 && state.tab === 'notBack') {
+      var n = document.createElement('div'); n.className = 'notice good small';
+      n.textContent = 'Welcome back. Your progress was saved in this browser, so the list starts at the next profile.';
+      w.appendChild(n);
+    }
+    var pages = Math.max(1, Math.ceil(list.length / state.per));
+    if (state.page >= pages) state.page = pages - 1;
+    var slice = list.slice(state.page * state.per, state.page * state.per + state.per);
+    var rows = $('rows'); rows.textContent = '';
+    if (!slice.length) {
+      var e = document.createElement('div'); e.className = 'empty';
+      e.textContent = state.q ? 'No match for this search.' :
+        state.tab === 'notBack' ? 'Nobody left to handle in this list.' :
+        state.tab === 'done' ? 'Profiles you open from "Not following back" appear here.' : 'Nothing here.';
+      rows.appendChild(e);
+    }
+    slice.forEach(function (it) { rows.appendChild(buildRow(it)); });
+    $('pageinfo').textContent = list.length ? 'Page ' + (state.page + 1) + ' of ' + pages + ' (' + fmt(list.length) + ' accounts)' : '';
+    $('prev').disabled = state.page <= 0; $('next').disabled = state.page >= pages - 1;
+    $('csv').disabled = !list.length;
+    $('resetBox').style.display = state.example ? 'none' : '';
+  }
+
+  function timeLabel(ms) {
+    var d = new Date(ms);
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) + ' ' +
+      d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function buildRow(it) {
+    var row = document.createElement('div');
+    var isDone = state.tab === 'done', isTodo = state.tab === 'notBack';
+    row.className = 'row' + (isDone ? ' done' : '');
+    var a = document.createElement('a'); a.className = 'name'; a.textContent = '@' + it.name;
+    a.href = C.frontendUrl(state.front, it.name); a.target = '_blank'; a.rel = 'noopener';
+    var meta = document.createElement('span'); meta.className = 'meta';
+    meta.textContent = isDone ? 'opened ' + timeLabel(it.time) : 'follow order #' + fmt(it.rank);
+    var open = document.createElement('button'); open.textContent = 'Open profile';
+    row.appendChild(a); row.appendChild(meta); row.appendChild(open);
+    var go = function () { markOpened(it.name, row); };
+    if (isTodo) {
+      a.addEventListener('click', go);
+      open.addEventListener('click', function () { window.open(C.frontendUrl(state.front, it.name), '_blank', 'noopener'); go(); });
+    } else {
+      open.addEventListener('click', function () { window.open(C.frontendUrl(state.front, it.name), '_blank', 'noopener'); });
+    }
+    if (isDone) {
+      var undo = document.createElement('button'); undo.textContent = 'Undo';
+      undo.addEventListener('click', function () { delete state.opened[it.name]; saveProgress(); render(); });
+      row.appendChild(undo);
+    }
+    return row;
+  }
+
+  function markOpened(name, row) {
+    if (state.opened[name]) return;
+    state.opened[name] = Date.now(); saveProgress();
+    row.classList.add('struck');
+    setTimeout(function () { render(); }, 700);
+  }
+
+  /* ---------- CSV ---------- */
+  function downloadBlob(blob, name) {
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 500);
+  }
+  function downloadCsv() {
+    var list = activeList(); if (!list.length) return;
+    var names = { notBack: 'not-following-back', done: 'done', mutuals: 'mutuals', fans: 'fans' };
+    downloadBlob(new Blob([C.toCsv(list, state.front)], { type: 'text/csv;charset=utf-8' }),
+      'hive-' + names[state.tab] + '-' + state.user + '.csv');
+  }
+
+  /* ---------- share picture (numbers only) ---------- */
+  function drawShare() {
+    var cv = $('cv'), L = state.lists; if (!L) return;
+    var W = 1080, H = state.size === 'story' ? 1920 : 1350;
+    cv.width = W; cv.height = H;
+    var g = cv.getContext('2d');
+    var bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#16171d'); bg.addColorStop(1, '#2a0d14');
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    var cy = state.size === 'story' ? 330 : 190;
+    // hexagon mark
+    g.fillStyle = '#e31337'; g.beginPath();
+    var cx = W / 2, r = 70;
+    for (var i = 0; i < 6; i++) { var an = Math.PI / 6 + i * Math.PI / 3 + Math.PI / 6; g.lineTo(cx + r * Math.cos(an), cy + r * Math.sin(an)); }
+    g.closePath(); g.fill();
+    g.textAlign = 'center'; g.fillStyle = '#f3f4f7';
+    g.font = '600 52px system-ui, sans-serif'; g.fillText('My Hive follow-back rate', cx, cy + 170);
+    g.fillStyle = '#ff3b57'; g.font = '800 250px system-ui, sans-serif'; g.fillText(L.rate + '%', cx, cy + 420);
+    var rows = [['I follow', fmt(L.following)], ['Follow me back', fmt(L.mutuals.length)], ['Do not follow back', fmt(L.notBack.length)]];
+    var y = cy + 560;
+    rows.forEach(function (rw) {
+      g.fillStyle = '#1f222b'; g.fillRect(120, y - 70, W - 240, 110);
+      g.textAlign = 'left'; g.fillStyle = '#9ba1b0'; g.font = '500 40px system-ui, sans-serif'; g.fillText(rw[0], 160, y);
+      g.textAlign = 'right'; g.fillStyle = '#f3f4f7'; g.font = '700 54px system-ui, sans-serif'; g.fillText(rw[1], W - 160, y + 4);
+      y += 140;
+    });
+    g.textAlign = 'center'; g.fillStyle = '#9ba1b0'; g.font = '500 36px system-ui, sans-serif';
+    g.fillText('Check yours: ' + SITE_URL.replace('https://', ''), cx, H - 90);
+    var can = !state.example;
+    ['savepic', 'sharepic', 'postx', 'copytxt'].forEach(function (id) { $(id).disabled = !can; });
+    $('shareNote').textContent = can ? 'X cannot attach the picture for you: save it first, then add it to your post.' : 'Sharing is switched off while example data is showing.';
+    if (can && !(navigator.canShare && navigator.share)) $('sharepic').classList.add('hidden'); else $('sharepic').classList.remove('hidden');
+  }
+  function shareString() {
+    var L = state.lists;
+    return C.shareText({ rate: L.rate, notBack: L.notBack.length, following: L.following }, SITE_URL, SHARE_TAG);
+  }
+  function canvasBlob(cb) { $('cv').toBlob(cb, 'image/png'); }
+
+  /* ---------- visit count ---------- */
+  function loadVisits() {
+    try {
+      fetch('https://' + GC_CODE + '.goatcounter.com/counter/TOTAL.json').then(function (r) { return r.json(); })
+        .then(function (j) { if (j && j.count) $('visits').textContent = j.count; }).catch(function () {});
+    } catch (e) {}
+  }
+
+  /* ---------- wire up ---------- */
+  function init() {
+    loadPrefs();
+    $('go').addEventListener('click', function () { start($('user').value); });
+    $('user').addEventListener('keydown', function (e) { if (e.key === 'Enter') start($('user').value); });
+    $('example').addEventListener('click', startExample);
+    $('q').addEventListener('input', function () { state.q = this.value; state.page = 0; render(); });
+    $('per').addEventListener('change', function () { state.per = Number(this.value); state.page = 0; savePrefs(); render(); });
+    $('front').addEventListener('change', function () { state.front = this.value; savePrefs(); render(); });
+    $('prev').addEventListener('click', function () { state.page = Math.max(0, state.page - 1); render(); window.scrollTo({ top: $('tabs').offsetTop - 20 }); });
+    $('next').addEventListener('click', function () { state.page++; render(); window.scrollTo({ top: $('tabs').offsetTop - 20 }); });
+    $('csv').addEventListener('click', downloadCsv);
+    function resetBoxNormal() {
+      var box = $('resetBox'); box.textContent = '';
+      var b = document.createElement('button'); b.className = 'link small'; b.textContent = 'Reset progress';
+      b.addEventListener('click', resetBoxAsk);
+      box.appendChild(b);
+    }
+    function resetBoxAsk() {
+      var box = $('resetBox'); box.textContent = '';
+      var t = document.createElement('span'); t.className = 'small'; t.textContent = 'Delete your saved progress (opened profiles) from this browser?';
+      var y = document.createElement('button'); y.textContent = 'Yes, reset'; y.className = 'primary';
+      var n = document.createElement('button'); n.textContent = 'Cancel';
+      y.addEventListener('click', function () { state.opened = {}; lsDel(userKey(state.user)); resetBoxNormal(); render(); });
+      n.addEventListener('click', resetBoxNormal);
+      box.appendChild(t); box.appendChild(y); box.appendChild(n);
+    }
+    resetBoxNormal();
+    document.querySelectorAll('#sizes button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.size = this.getAttribute('data-size');
+        document.querySelectorAll('#sizes button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        drawShare();
+      });
+    });
+    $('savepic').addEventListener('click', function () { canvasBlob(function (b) { if (b) downloadBlob(b, 'hive-follow-back-' + state.size + '.png'); }); });
+    $('sharepic').addEventListener('click', function () {
+      canvasBlob(function (b) {
+        if (!b) return;
+        var f = new File([b], 'hive-follow-back.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [f] })) navigator.share({ files: [f], text: shareString() }).catch(function () {});
+      });
+    });
+    $('postx').addEventListener('click', function () {
+      window.open('https://x.com/intent/post?text=' + encodeURIComponent(shareString()), '_blank', 'noopener');
+    });
+    $('copytxt').addEventListener('click', function () {
+      var t = shareString(), done = function () { $('shareNote').textContent = 'Text copied.'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { $('shareNote').textContent = t; });
+      else $('shareNote').textContent = t;
+    });
+    $('privlink').addEventListener('click', function () { $('privacy').open = true; });
+    if (location.hash === '#privacy') $('privacy').open = true;
+    window.addEventListener('hashchange', function () { if (location.hash === '#privacy') $('privacy').open = true; });
+    if (INSIGHTS_URL && /^https:\/\//.test(INSIGHTS_URL)) {
+      var ins = $('insights'), la = document.createElement('a');
+      la.href = INSIGHTS_URL; la.target = '_blank'; la.rel = 'noopener'; la.textContent = 'Hive Insights';
+      var note = document.createElement('span'); note.className = 'small'; note.textContent = ' (work in progress)';
+      ins.textContent = ''; ins.appendChild(la); ins.appendChild(note);
+    }
+    loadVisits();
+  }
+  init();
+})();
+
+</script>
+</body>
+</html>
